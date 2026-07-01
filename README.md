@@ -79,7 +79,7 @@ Rivestack is simply the fastest way to get there: free tier, pgvector pre-enable
 
 Spin up the free tier at **[rivestack.io](https://rivestack.io)** — no credit card, Postgres with pgvector ready in 60 seconds.
 
-Upgrading to a dedicated $15/mo Solo node? Use promo code **[PROMOCODE]** for an extra month free.
+Upgrading to a dedicated $15/mo Solo node? Use promo code **FIRSTMONTHFREE** for an extra month free.
 
 ---
 
