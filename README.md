@@ -19,8 +19,9 @@ A complete, working RAG pipeline in ~160 lines of Python. No LangChain, no Pinec
 
 1. **Create a free Postgres database** at [rivestack.io](https://rivestack.io) — pgvector comes enabled, nothing to install.
 2. **Copy the connection string** from your dashboard, then `cp .env.example .env` and paste it in (plus your OpenAI key).
-3. **Create the table** — paste `schema.sql` into the dashboard's SQL editor, or run:
+3. **Create the table** — nothing to do: `ingest.py` applies `schema.sql` automatically on first run. Prefer doing it yourself? Paste `schema.sql` into the dashboard's SQL editor, or:
    ```bash
+   set -a; source .env; set +a   # .env isn't auto-exported to your shell
    psql "$DATABASE_URL" -f schema.sql
    ```
 4. **Ingest the knowledge base** (15 markdown files in `docs/` — swap in your own):

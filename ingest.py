@@ -1,8 +1,7 @@
 """Load the markdown knowledge base into Postgres.
 
-Chunks every docs/*.md file and inserts (source, text, emb). Embeddings use
-OpenAI text-embedding-3-small — the same model rag.py embeds questions with, so
-the cosine distances line up. --no-embed skips embedding and leaves emb NULL."""
+Chunks every docs/*.md file and inserts (source, text, emb), embedding with the
+same OpenAI model rag.py uses so distances line up. --no-embed leaves emb NULL."""
 import argparse
 import os
 import sys
@@ -33,6 +32,7 @@ def main() -> None:
 
     client = None if args.no_embed else OpenAI()
     with psycopg2.connect(os.environ["DATABASE_URL"]) as conn, conn.cursor() as cur:
+        cur.execute((Path(__file__).parent / "schema.sql").read_text())  # creates table + index if missing
         cur.execute("TRUNCATE docs")  # re-runs replace the corpus instead of duplicating it
         for path in sorted((Path(__file__).parent / "docs").glob("*.md")):
             for piece in chunk(path.read_text(encoding="utf-8")):
