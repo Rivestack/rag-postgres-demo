@@ -1,7 +1,6 @@
 """Ask questions over the docs table. The entire retrieval step is one SQL query."""
 import os
 import sys
-import time
 
 import psycopg2
 from dotenv import load_dotenv
@@ -20,13 +19,15 @@ SYSTEM = ("Answer the question using ONLY the context below. Cite the source fil
 def search(question: str, k: int = 3) -> tuple[list[tuple[str, str, float]], float]:
     """Embed the question, then let Postgres find the k nearest chunks."""
     q_emb = client.embeddings.create(model="text-embedding-3-small", input=question).data[0].embedding
+    # This is the whole vector search: <=> is pgvector's cosine distance.
+    sql = ("SELECT source, text, emb <=> %s::vector AS dist "
+           "FROM docs WHERE emb IS NOT NULL ORDER BY dist LIMIT %s")
     with psycopg2.connect(os.environ["DATABASE_URL"]) as conn, conn.cursor() as cur:
-        t0 = time.perf_counter()
-        # This is the whole vector search: <=> is pgvector's cosine distance.
-        cur.execute("SELECT source, text, emb <=> %s::vector AS dist "
-                    "FROM docs WHERE emb IS NOT NULL ORDER BY dist LIMIT %s", (str(q_emb), k))
+        cur.execute(sql, (str(q_emb), k))
         hits = cur.fetchall()
-        query_ms = (time.perf_counter() - t0) * 1000  # the SQL round-trip, nothing else
+        # Ask Postgres what the search cost — measured, not guessed, network-independent.
+        cur.execute("EXPLAIN (ANALYZE, FORMAT JSON) " + sql, (str(q_emb), k))
+        query_ms = cur.fetchone()[0][0]["Execution Time"]
     if not hits:
         raise RuntimeError("No embedded chunks in the docs table — run `python ingest.py` first.")
     return hits, query_ms
@@ -56,4 +57,4 @@ if __name__ == "__main__":
         sys.exit(str(err))
     print(f"\n{answer}\n")
     print(f"sources: {', '.join(sources)}")
-    print(f"vector search: {query_ms:.1f} ms")
+    print(f"vector search (in-DB): {query_ms:.2f} ms")

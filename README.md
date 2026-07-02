@@ -56,7 +56,7 @@ No orchestration layer, no retriever abstraction, no "chains" — a database doi
 
 ## How fast is the retrieval?
 
-The CLI prints the vector-search time on every question. Ask Postgres itself:
+The CLI and the web UI print the **in-database search time** on every question — Postgres's own measurement via `EXPLAIN ANALYZE`, so it doesn't change with your distance from the database. See for yourself:
 
 ```
 EXPLAIN ANALYZE SELECT source, text FROM docs ORDER BY emb <=> '[...]'::vector LIMIT 3;

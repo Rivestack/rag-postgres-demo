@@ -14,7 +14,7 @@ def ask_route(question: str = Body(embed=True)) -> dict:
         answer, sources, query_ms = ask(question)
     except RuntimeError as err:  # empty docs table
         raise HTTPException(status_code=400, detail=str(err))
-    return {"answer": answer, "sources": sources, "query_ms": round(query_ms, 1)}
+    return {"answer": answer, "sources": sources, "query_ms": round(query_ms, 2)}
 
 
 PAGE = """<!doctype html>
@@ -39,7 +39,7 @@ q.addEventListener("keydown", async e => {
   if (!r.ok) { answer.textContent = d.detail || "server error"; return; }
   answer.textContent = d.answer;
   sources.textContent = "sources: " + d.sources.join(", ");
-  ms.innerHTML = `<span class="ms">vector search ${d.query_ms} ms</span>`;
+  ms.innerHTML = `<span class="ms">in-DB vector search ${d.query_ms} ms</span>`;
 });
 </script></body></html>"""
 
